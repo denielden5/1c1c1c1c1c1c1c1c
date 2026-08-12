@@ -342,10 +342,10 @@ header.hero{position:relative;padding:clamp(44px,9vh,92px) 0 clamp(50px,8vh,84px
 .mPlay svg{width:15px;height:15px}
 .mPlay:hover{transform:scale(1.07);box-shadow:0 0 24px -5px rgba(198,224,99,.75)}
 .mPlay[disabled]{opacity:.45;cursor:default;transform:none;box-shadow:none}
-/* hidden engine; becomes a visible native player only if our ui can't drive it */
+/* soundcloud runs hidden; our card above is always the visible player */
 #scFrame{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:0;left:-9999px}
-.rawPlayer #scFrame{position:static;width:100%;max-width:460px;height:120px;opacity:1;pointer-events:auto;margin-top:16px;border-radius:3px}
-.rawPlayer .mini{display:none}
+.mini.dead .mBar,.mini.dead .mRow{opacity:.35;pointer-events:none}
+.mini.dead .mTitle{color:var(--sodium)}
 .socials{margin-top:12px;display:flex;flex-direction:column;gap:1px}
 .socials a{
   display:flex;align-items:center;gap:9px;
@@ -464,7 +464,7 @@ header.hero{position:relative;padding:clamp(44px,9vh,92px) 0 clamp(50px,8vh,84px
               <button class="mBtn" id="mPrev" aria-label="Previous track"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 5v14L8 12zM6 5h2v14H6z"/></svg></button>
               <button class="mBtn" id="mNext" aria-label="Next track"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5v14l10-7zM16 5h2v14h-2z"/></svg></button>
               <span class="mTime" id="mTime">0:00</span>
-              <input class="mVol" type="range" id="mVol" min="0" max="100" value="75" aria-label="Volume">
+              <input class="mVol" type="range" id="mVol" min="0" max="100" value="20" aria-label="Volume">
             </div>
           </div>
           <button class="mPlay" id="mPlay" disabled aria-label="Play">
@@ -665,8 +665,26 @@ header.hero{position:relative;padding:clamp(44px,9vh,92px) 0 clamp(50px,8vh,84px
     var mini  = document.getElementById('mini');
     if (!frame || !mini) return;
 
-    function goRaw(){ document.body.classList.add('rawPlayer'); }
-    if (!window.SC || !SC.Widget){ goRaw(); return; }
+    var PLAYLIST_URL = "https://soundcloud.com/rovedd/sets/sccc";
+    /* If SoundCloud's api can't load, keep this card exactly where it is and
+       turn it into a link. Never hide it: an empty gap is the worst outcome. */
+    function degrade(){
+      var t = document.getElementById('mTitle');
+      var p = document.getElementById('mPlay');
+      mini.classList.add('dead');
+      t.textContent = 'Open on SoundCloud';
+      if (p){
+        p.disabled = false;
+        p.setAttribute('aria-label','Open playlist on SoundCloud');
+        p.onclick = function(){ window.open(PLAYLIST_URL, '_blank', 'noopener'); };
+      }
+      mini.style.cursor = 'pointer';
+      mini.onclick = function(e){
+        if (e.target.closest('.mPlay')) return;
+        window.open(PLAYLIST_URL, '_blank', 'noopener');
+      };
+    }
+    if (!window.SC || !SC.Widget){ degrade(); return; }
 
     var play = document.getElementById('mPlay'),
         icon = document.getElementById('mIcon'),
@@ -680,9 +698,9 @@ header.hero{position:relative;padding:clamp(44px,9vh,92px) 0 clamp(50px,8vh,84px
         time = document.getElementById('mTime');
 
     var w, order = [], at = 0, dur = 0, playing = false, ready = false;
-    try { w = SC.Widget(frame); } catch(e){ goRaw(); return; }
+    try { w = SC.Widget(frame); } catch(e){ degrade(); return; }
 
-    var guard = setTimeout(function(){ if (!ready) goRaw(); }, 9000);
+    var guard = setTimeout(function(){ if (!ready) degrade(); }, 9000);
 
     function clock(ms){
       if (!ms || ms < 0) ms = 0;
@@ -718,7 +736,7 @@ header.hero{position:relative;padding:clamp(44px,9vh,92px) 0 clamp(50px,8vh,84px
 
     w.bind(SC.Widget.Events.READY, function(){
       w.getSounds(function(list){
-        if (!list || !list.length){ goRaw(); return; }
+        if (!list || !list.length){ degrade(); return; }
         ready = true;
         clearTimeout(guard);
         order = shuffle(list.map(function(_, i){ return i; }));
