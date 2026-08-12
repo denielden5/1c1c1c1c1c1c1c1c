@@ -248,6 +248,52 @@ header.hero{position:relative;padding:clamp(44px,9vh,92px) 0 clamp(50px,8vh,84px
 @media(min-width:901px){.heroText{padding-right:172px}}
 @media(max-width:900px){.dancer{width:150px;right:-16px;bottom:132px}}
 @media(max-width:800px){.dancer{position:static;margin-top:24px;width:170px}}
+/* discord contacts */
+.contact{margin-top:22px;padding-top:16px;border-top:1px solid var(--line-soft)}
+.contact .lbl{
+  font-family:"Courier Prime",monospace;font-size:11px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--dim);display:block;margin-bottom:9px;
+}
+.who{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:7px 10px;margin-left:-10px;border-radius:2px;
+  border:0;border-left:2px solid transparent;background:none;
+  font-family:"Courier Prime",monospace;font-size:13px;color:var(--body);
+  cursor:pointer;text-align:left;
+  transition:color .2s,background .2s,border-color .2s;
+}
+.who:hover,.who:focus-visible{color:var(--flare);background:var(--panel);border-left-color:#5865F2}
+.who .av{
+  width:32px;height:32px;border-radius:50%;flex:none;position:relative;
+  overflow:hidden;background:var(--panel);
+  border:1px solid var(--line);
+  box-shadow:0 0 0 0 rgba(88,101,242,0);
+  transition:box-shadow .3s,border-color .3s;
+}
+.who:hover .av{border-color:#5865F2;box-shadow:0 0 16px 1px rgba(88,101,242,.35)}
+.who .av img{width:100%;height:100%;object-fit:cover;display:block}
+/* shown when no avatar file is present */
+.who .av .ini{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:14px;
+  color:var(--sodium);background:linear-gradient(150deg,rgba(29,44,27,.9),rgba(13,19,14,.9));
+}
+.who .nm{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.who .nm b{font-weight:400;color:inherit}
+.who .nm span{color:var(--dim);font-size:11px}
+.who:hover .nm span{color:var(--body)}
+.whoRow{display:flex;align-items:center;gap:4px}
+.whoRow .who{flex:1;min-width:0}
+.side{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:2px;
+  border:1px solid var(--line);background:var(--panel);color:var(--dim);
+  text-decoration:none;
+  transition:color .22s,border-color .22s,background .22s;
+}
+.side svg{width:15px;height:15px}
+.side:hover,.side:focus-visible{color:#fff;border-color:#C13584;background:#C13584}
+
 .socials{margin-top:12px;display:flex;flex-direction:column;gap:1px}
 .socials a{
   display:flex;align-items:center;gap:9px;
@@ -314,6 +360,27 @@ header.hero{position:relative;padding:clamp(44px,9vh,92px) 0 clamp(50px,8vh,84px
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="1" y="12" width="1.7" height="5" rx=".85"/><rect x="4.2" y="10" width="1.7" height="7" rx=".85"/><rect x="7.4" y="8.4" width="1.7" height="8.6" rx=".85"/><path d="M11.2 17V7.5a4.7 4.7 0 0 1 7.3 3.2 3.2 3.2 0 0 1-.5 6.3h-6.8z"/></svg>
             soundcloud <span class="h">/ tracks</span>
           </a>
+        </div>
+
+        <div class="contact">
+          <span class="lbl">contact / discord</span>
+
+          <!-- Your avatar: drop a square image named me.jpg next to index.html.
+               Until then the initial shows instead. -->
+          <div class="whoRow">
+            <button class="who" data-copy="roved">
+              <span class="av"><img id="avMe" alt="" hidden><span class="ini" id="iniMe">R</span></span>
+              <span class="nm"><b>@roved</b><span>copy handle</span></span>
+            </button>
+            <a class="side" href="https://www.instagram.com/paintbeastdemon" target="_blank" rel="noopener" title="@paintbeastdemon on Instagram" aria-label="Open @paintbeastdemon on Instagram">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.5" cy="6.5" r="1.15" fill="currentColor" stroke="none"/></svg>
+            </a>
+          </div>
+
+          <button class="who" data-copy="1c34vault">
+            <span class="av"><img id="avVault" alt=""></span>
+            <span class="nm"><b>@1c34vault</b><span>copy handle</span></span>
+          </button>
         </div>
       </div>
       <div class="heroText">
@@ -516,17 +583,37 @@ header.hero{position:relative;padding:clamp(44px,9vh,92px) 0 clamp(50px,8vh,84px
   });
 
   var toast = document.getElementById('toast'), timer;
-  function copy(){
-    function done(){
-      toast.classList.add('show');
-      clearTimeout(timer);
-      timer = setTimeout(function(){ toast.classList.remove('show'); }, 1800);
-    }
-    if (navigator.clipboard) navigator.clipboard.writeText('@1c34vault').then(done, done);
+  function showToast(msg){
+    if (msg) toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(timer);
+    timer = setTimeout(function(){ toast.classList.remove('show'); }, 1800);
+  }
+  function copyText(txt){
+    function done(){ showToast('Copied ' + txt); }
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, done);
     else done();
   }
+  function copy(){ copyText('1c34vault'); }
   document.getElementById('copy').addEventListener('click', copy);
   document.getElementById('copy2').addEventListener('click', copy);
+
+  /* discord contacts: reuse the archive photo, copy handle on click */
+  var pfpImg = document.querySelector('.pfp img');
+  var avVault = document.getElementById('avVault');
+  if (pfpImg && avVault) avVault.src = pfpImg.src;
+
+  /* your own avatar, if me.jpg sits next to this file */
+  var avMe = document.getElementById('avMe'), iniMe = document.getElementById('iniMe');
+  if (avMe){
+    avMe.onload = function(){ avMe.hidden = false; if (iniMe) iniMe.style.display = 'none'; };
+    avMe.onerror = function(){};
+    avMe.src = 'me.jpg';
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.who'), function(b){
+    b.addEventListener('click', function(){ copyText(b.getAttribute('data-copy')); });
+  });
 
   /* profile picture sound */
   var ac = null, buf = null, current = null, ready = false;
